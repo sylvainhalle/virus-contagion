@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Configuration file for AntRun.
+  
+  Use this file to override the default properties contained
+  in build.xml. For example, to override the build.jar.filename
+  property (which sets the name of the compiled jar file), add
+  an element
+  
+  <jar>
+    <filename>foo</filename>
+  </jar>
+  
+  inside the <build> element.
+  
+  **Caveat emptor:** in some cases, changing this file and running ant
+  again will result in Ant using a cached version of the old file! Run
+  "ant dummy" to make sure that the correct data is being read. Otherwise
+  you might need to run "ant clean" and start over.
+-->
+<build>
+  <!-- Uncomment any of these if you want to override the build
+       script's default values -->
+
+  <!-- The project's name -->
+  <name>Coronavirus Simulator</name>
+  
+  <!-- The project's version number -->
+  <version>0.1</version>
+  
+  <!-- The project's author. Currently this only
+  shows up in the footer of the Javadoc documentation. -->
+  <author>Sylvain Hall&#233;</author>
+  
+  <!-- The project's main class -->
+  <mainclass>coronaarena.Main</mainclass>
+  
+  <!-- Output jar -->
+  <jar>
+    <filename>coronavirus-beepbeep.jar</filename>
+    <withdeps>true</withdeps>
+    <withdoc>false</withdoc>
+  </jar>
+  
+  <!-- Redefine directories -->
+  <srcdir>Source/src</srcdir>
+  <bindir>Source/bin</bindir>
+  <docdir>Source/doc</docdir>
+  <libdir>Source/lib</libdir>
+  <depdir>Source/dep</depdir>
+  
+  <!--
+    Write JAR dependencies here.
+  -->
+  <dependencies>
+    <dependency>
+      <!--
+      BeepBeep core
+      -->
+      <name>BeepBeep</name>
+      <classname>ca.uqac.lif.cep.Processor</classname>
+      <bundle>true</bundle>
+      <files>
+        <zip>https://github.com/liflab/beepbeep-3/releases/download/v0.10.2-alpha/beepbeep-3-0.10.2-alpha.zip</zip>
+      </files>
+    </dependency>
+    <dependency>
+      <!--
+      Synthia
+      -->
+      <name>Synthia</name>
+      <classname>ca.uqac.lif.synthia.Picker</classname>
+      <bundle>true</bundle>
+      <files>
+        <zip>https://github.com/liflab/synthia/releases/download/v0.1/synthia.jar</jar>
+      </files>
+    </dependency>
+  </dependencies>
+</build>
