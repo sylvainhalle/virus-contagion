@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package virussim;
+
 
 import static ca.uqac.lif.cep.Connector.connect;
 
@@ -25,14 +25,18 @@ import java.util.Set;
 import ca.uqac.lif.cep.functions.ApplyFunction;
 import ca.uqac.lif.cep.functions.Cumulate;
 import ca.uqac.lif.cep.functions.CumulativeFunction;
+import ca.uqac.lif.cep.functions.FunctionTree;
 import ca.uqac.lif.cep.functions.TurnInto;
 import ca.uqac.lif.cep.mtnp.DrawPlot;
 import ca.uqac.lif.cep.mtnp.UpdateTableMap;
 import ca.uqac.lif.cep.tmf.CountDecimate;
 import ca.uqac.lif.cep.tmf.Fork;
 import ca.uqac.lif.cep.tmf.Pump;
+import ca.uqac.lif.cep.tuples.MapToTuple;
 import ca.uqac.lif.cep.tuples.MergeTuples;
 import ca.uqac.lif.cep.tuples.ScalarIntoTuple;
+import ca.uqac.lif.cep.util.Maps;
+import ca.uqac.lif.cep.util.Multiset;
 import ca.uqac.lif.cep.util.Numbers;
 import ca.uqac.lif.cep.widgets.WidgetSink;
 import ca.uqac.lif.mtnp.plot.gnuplot.Scatterplot;
@@ -44,9 +48,10 @@ import ca.uqac.lif.synthia.random.RandomFloat;
 import ca.uqac.lif.synthia.random.RandomIntervalFloat;
 import ca.uqac.lif.synthia.vector.HyperspherePicker;
 import ca.uqac.lif.synthia.vector.PrismPicker;
+import virussim.Patient;
 import virussim.Patient.Health;
-import virussim.cep.CountStatus;
 import virussim.cep.DrawArena;
+import virussim.cep.GetHealth;
 import virussim.gui.BitmapJFrame;
 import virussim.gui.ProcessorClickListener;
 import virussim.physics.Arena;
@@ -75,7 +80,7 @@ public class Main
     int width = 640, height = 320;
     
     // The initial velocity of each player
-    float velocity = 4;
+    float velocity = 3;
     
     // The number of players in the arena
     int num_players = 200;
@@ -130,7 +135,7 @@ public class Main
       if (i == 0)
       {
         // Set a single player as infected
-        p.m_health = Health.INFECTED;
+        p.setHealthState(Health.INFECTED);
       }
       if (use_markov)
       {
@@ -158,6 +163,7 @@ public class Main
       window.getLabel().addMouseListener(new ProcessorClickListener(pump));
       WidgetSink ws = new WidgetSink(window.getLabel());
       connect(draw, ws);
+      window.setLocation(50, 50);
       window.setVisible(true);
     }
     
@@ -174,7 +180,10 @@ public class Main
       connect(one, sum);
       ApplyFunction stt = new ApplyFunction(new ScalarIntoTuple("t"));
       connect(sum, stt);
-      ApplyFunction count = new ApplyFunction(new CountStatus("HEALTHY", "INFECTED", "RECOVERED"));
+      ApplyFunction count = new ApplyFunction(new FunctionTree(
+          MapToTuple.instance,
+            new FunctionTree(Multiset.getCardinalities,
+                new FunctionTree(Maps.multiValues, new Maps.ApplyAll(GetHealth.instance)))));
       connect(f, 1, count, 0);
       ApplyFunction merge = new ApplyFunction(new MergeTuples());
       connect(stt, 0, merge, 0);
@@ -188,6 +197,7 @@ public class Main
       BitmapJFrame window = new BitmapJFrame(640, 480, "Evolution");
       WidgetSink ws = new WidgetSink(window.getLabel());
       connect(draw, ws);
+      window.setLocation(100, 200);
       window.setVisible(true);
     }
     

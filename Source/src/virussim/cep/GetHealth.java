@@ -17,54 +17,30 @@
  */
 package virussim.cep;
 
-import java.util.Map;
-
 import ca.uqac.lif.cep.functions.UnaryFunction;
-import ca.uqac.lif.cep.tuples.Tuple;
-import ca.uqac.lif.cep.tuples.TupleMap;
 import virussim.Patient;
 
 /**
- * In the state of an arena, counts
- * @author sylvain
- *
+ * Function that extracts the health status of a given patient
  */
-@SuppressWarnings("rawtypes")
-public class CountStatus extends UnaryFunction<Map,Tuple>
+public class GetHealth extends UnaryFunction<Patient,String>
 {
   /**
-   * The keys of the resulting tuples
+   * A single visible instance of the function
    */
-  protected String[] m_keys;
+  public static final transient GetHealth instance = new GetHealth();
   
   /**
    * Creates a new instance of the function
-   * @param keys The keys
    */
-  public CountStatus(Object ... keys)
+  protected GetHealth()
   {
-    super(Map.class, Tuple.class);
-    m_keys = new String[keys.length];
-    for (int i = 0; i < keys.length; i++)
-    {
-      m_keys[i] = keys[i].toString();
-    }
+    super(Patient.class, String.class);
   }
 
   @Override
-  public Tuple getValue(Map m)
+  public String getValue(Patient p)
   {
-    TupleMap t = new TupleMap();
-    for (String k : m_keys)
-    {
-      t.put(k, 0);
-    }
-    for (Object o : m.values())
-    {
-      Patient p = (Patient) o;
-      String s = p.getHealthState().toString();
-      t.put(s, ((int) t.get(s)) + 1);
-    }
-    return t;
+    return p.getHealthState().toString();
   }
 }
