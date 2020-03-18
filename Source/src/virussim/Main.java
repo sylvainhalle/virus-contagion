@@ -23,8 +23,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uqac.lif.cep.functions.ApplyFunction;
+import ca.uqac.lif.cep.functions.Cumulate;
+import ca.uqac.lif.cep.functions.CumulativeFunction;
+import ca.uqac.lif.cep.functions.TurnInto;
+import ca.uqac.lif.cep.mtnp.DrawPlot;
+import ca.uqac.lif.cep.mtnp.UpdateTableMap;
+import ca.uqac.lif.cep.tmf.CountDecimate;
+import ca.uqac.lif.cep.tmf.Fork;
 import ca.uqac.lif.cep.tmf.Pump;
+import ca.uqac.lif.cep.tuples.MergeTuples;
+import ca.uqac.lif.cep.tuples.ScalarIntoTuple;
+import ca.uqac.lif.cep.util.Numbers;
 import ca.uqac.lif.cep.widgets.WidgetSink;
+import ca.uqac.lif.mtnp.plot.gnuplot.Scatterplot;
 import ca.uqac.lif.synthia.Picker;
 import ca.uqac.lif.synthia.random.AffineTransform;
 import ca.uqac.lif.synthia.random.GaussianFloat;
@@ -32,8 +43,10 @@ import ca.uqac.lif.synthia.random.RandomBoolean;
 import ca.uqac.lif.synthia.random.RandomFloat;
 import ca.uqac.lif.synthia.random.RandomIntervalFloat;
 import virussim.Patient.Health;
+import virussim.cep.CountStatus;
 import virussim.cep.DrawArena;
-import virussim.gui.ArenaWindow;
+import virussim.gui.BitmapJFrame;
+import virussim.gui.ProcessorClickListener;
 import virussim.physics.Arena;
 import virussim.picker.CirclePicker;
 import virussim.picker.HealthMarkovChain;
@@ -66,11 +79,11 @@ public class Main
     int num_players = 200;
     
     // The probability of a player being movable
-    float movable_probability = 0.25f;
+    float movable_probability = 1f;
     
     // The number of simulation steps after which a player recovers
     // (in the fixed model)
-    int recovery_steps = 50;
+    int recovery_steps = 75;
     
     // The probability of dying when infected (in the Markov model)
     float p_die = 0f;
@@ -99,12 +112,12 @@ public class Main
       r_h = new AffineTransform.AffineTransformFloat(rf_h, height, 0);
     }
     
-    // Create a collection of randomly generated players
+    // Create a collection of randomly generated players, and add them
+    // to the arena
     RectanglePicker p_position = new RectanglePicker(r_w, r_h);
     RandomIntervalFloat rif = new RandomIntervalFloat(0, 2 * Math.PI);
     rif.setSeed(seed++);
-    CirclePicker p_velocity = new CirclePicker(
-        velocity, rif);
+    CirclePicker p_velocity = new CirclePicker(velocity, rif);
     RandomBoolean p_movable = new RandomBoolean(movable_probability);
     p_movable.setSeed(seed++);
     PlayerPicker p_player = new PlayerPicker(p_position, p_velocity, p_movable);
@@ -129,19 +142,54 @@ public class Main
     }
     Arena arena = new Arena(width, height, players);
     
-    // Create a widget sink
+    // Connect arena to pump and to fork
     Pump pump = new Pump(50);
-    ArenaWindow win = new ArenaWindow(width, height, pump);
-    WidgetSink w_sink = new WidgetSink(win.getLabel());
-    
-    // Connect arena to sink, with a pump in between
     connect(arena, pump);
-    ApplyFunction draw = new ApplyFunction(new DrawArena(width, height));
-    connect(pump, draw);
-    connect(draw, w_sink);
+    Fork fork = new Fork(2);
+    connect(pump, fork);
+    
+    {
+      // Branch 1: render arena and draw in window
+      ApplyFunction draw = new ApplyFunction(new DrawArena(width, height));
+      connect(fork, 0, draw, 0);
+      BitmapJFrame window = new BitmapJFrame(width, height, "Simulation");
+      window.getLabel().addMouseListener(new ProcessorClickListener(pump));
+      WidgetSink ws = new WidgetSink(window.getLabel());
+      connect(draw, ws);
+      window.setVisible(true);
+    }
+    
+    {
+      // Branch 2: compute infected
+      int decim_interval = 25;
+      CountDecimate decim = new CountDecimate(decim_interval);
+      connect(fork, 1, decim, 0);
+      Fork f = new Fork(2);
+      connect(decim, f);
+      TurnInto one = new TurnInto(decim_interval);
+      connect(f, 0, one, 0);
+      Cumulate sum = new Cumulate(new CumulativeFunction<Number>(Numbers.addition));
+      connect(one, sum);
+      ApplyFunction stt = new ApplyFunction(new ScalarIntoTuple("t"));
+      connect(sum, stt);
+      ApplyFunction count = new ApplyFunction(new CountStatus("HEALTHY", "INFECTED", "RECOVERED"));
+      connect(f, 1, count, 0);
+      ApplyFunction merge = new ApplyFunction(new MergeTuples());
+      connect(stt, 0, merge, 0);
+      connect(count, 0, merge, 1);
+      UpdateTableMap table = new UpdateTableMap("t", "HEALTHY", "INFECTED", "RECOVERED");
+      connect(merge, table);
+      Scatterplot plot = new Scatterplot();
+      
+      DrawPlot draw = new DrawPlot(plot);
+      connect(table, draw);
+      BitmapJFrame window = new BitmapJFrame(640, 480, "Evolution");
+      WidgetSink ws = new WidgetSink(window.getLabel());
+      connect(draw, ws);
+      window.setVisible(true);
+    }
     
     // Ready
-    win.setVisible(true);
     pump.turn();
   }
 
