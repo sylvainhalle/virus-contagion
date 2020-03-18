@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package coronaarena;
+package virussim.cep;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.util.Map;
 
 import ca.uqac.lif.cep.functions.UnaryFunction;
+import virussim.Patient;
 
 /**
  * From a map of players, a BeepBeep {@link Function} object that produces 
@@ -77,7 +78,7 @@ public class DrawArena extends UnaryFunction<Map,BufferedImage>
     g2.fillRect(0, 0, m_width, m_height);
     for (Object o : x.values())
     {
-      render(g2, (Player) o);
+      render(g2, (Patient) o);
     }
     return img;
   }
@@ -86,7 +87,7 @@ public class DrawArena extends UnaryFunction<Map,BufferedImage>
    * Draws a player on the image
    * @param p The player to draw
    */
-  protected void render(Graphics2D g2, Player p)
+  protected void render(Graphics2D g2, Patient p)
   {
     switch (p.getHealthState())
     {
@@ -96,6 +97,9 @@ public class DrawArena extends UnaryFunction<Map,BufferedImage>
     case INFECTED:
       g2.setColor(s_infectedColor);
       break;
+    case DEAD:
+      // Dead dots disappear
+      return;
     default:
       g2.setColor(s_recoveredColor);
       break;

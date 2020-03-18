@@ -15,10 +15,10 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package coronaarena.picker;
+package virussim.picker;
 
 import ca.uqac.lif.synthia.Picker;
-import coronaarena.Vector2d;
+import virussim.physics.Vector2d;
 
 /**
  * A picker that generates 2D vectors.

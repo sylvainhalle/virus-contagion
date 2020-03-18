@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package coronaarena;
+package virussim.physics;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,18 +25,24 @@ import java.util.Queue;
 import ca.uqac.lif.cep.Processor;
 import ca.uqac.lif.cep.tmf.Source;
 
+/**
+ * A rectangular region where balls can move and collide. The state
+ * of an arena is given by the individual state (position and velocity)
+ * of each of the balls it contains. The state of the balls is updated
+ * by calling {@link #update()}.
+ */
 public class Arena extends Source
 {
   /**
    * The set of players in the arena
    */
-  /*@ non_null @*/ protected Map<Integer,Player> m_players;
-  
+  /*@ non_null @*/ protected Map<Integer,Ball> m_balls;
+
   /**
    * The width of the arena
    */
   protected double m_width;
-  
+
   /**
    * The height of the arena
    */
@@ -46,20 +52,20 @@ public class Arena extends Source
    * Creates a new arena
    * @param width The width of the arena
    * @param height The height of the arena
-   * @param players The collection of players to put inside the arena
+   * @param balls The collection of players to put inside the arena
    */
-  public Arena(int width, int height, /*@ non_null @*/ Collection<Player> players)
+  public Arena(int width, int height, /*@ non_null @*/ Collection<? extends Ball> balls)
   {
     super(1);
     m_width = width;
     m_height = height;
-    m_players = new HashMap<Integer,Player>(players.size());
-    for (Player p : players)
+    m_balls = new HashMap<Integer,Ball>(balls.size());
+    for (Ball b : balls)
     {
-      m_players.put(p.m_id, p);
+      m_balls.put(b.m_id, (Ball) b);
     }
   }
-  
+
   /**
    * Gets the width of the arena
    * @return The width
@@ -68,7 +74,7 @@ public class Arena extends Source
   {
     return m_width;
   }
-  
+
   /**
    * Gets the height of the arena
    * @return The height
@@ -87,52 +93,61 @@ public class Arena extends Source
   }
 
   /**
-   * Updates the state of each player
+   * Gets the current state of each ball in the arena
+   * @return A map between ball IDs and ball instances
+   */
+  public Map<Integer,Ball> getBalls()
+  {
+    return m_balls;
+  }
+
+  /**
+   * Updates the state of each ball
    */
   protected void update()
   {
     // Step the position of movable objects based off their velocity/gravity and elapsedTime
-    for (int i = 0; i < m_players.size(); i++)
+    for (int i = 0; i < m_balls.size(); i++)
     {
-      Player p1 = m_players.get(i);
-      if (p1.isMoving())
+      Ball p1 = m_balls.get(i);
+      if (!p1.isFixed())
       {
-      p1.getPosition().setX(p1.getPosition().getX() + p1.getVelocity().getX());
-      p1.getPosition().setY(p1.getPosition().getY() + p1.getVelocity().getY());
+        p1.getPosition().setX(p1.getPosition().getX() + p1.getVelocity().getX());
+        p1.getPosition().setY(p1.getPosition().getY() + p1.getVelocity().getY());
       }
     }
     // Check for collision with walls
-    for (int i = 0; i < m_players.size(); i++)
+    for (int i = 0; i < m_balls.size(); i++)
     {
-      Player p1 = m_players.get(i);
+      Ball p1 = m_balls.get(i);
       if (p1.getPosition().getX() - p1.getRadius() < 0)
       {
         p1.getPosition().setX(p1.getRadius()); // Place ball against edge
-        p1.getVelocity().setX(-(p1.getVelocity().getX() * Player.s_restitution)); // Reverse direction and account for friction
-        p1.getVelocity().setY(p1.getVelocity().getY() * Player.s_restitution);
+        p1.getVelocity().setX(-(p1.getVelocity().getX() * Ball.s_restitution)); // Reverse direction and account for friction
+        p1.getVelocity().setY(p1.getVelocity().getY() * Ball.s_restitution);
       }
       else if (p1.getPosition().getX() + p1.getRadius() > getWidth()) // Right Wall
       {
         p1.getPosition().setX(getWidth() - p1.getRadius());   // Place ball against edge
-        p1.getVelocity().setX(-(p1.getVelocity().getX() * Player.s_restitution)); // Reverse direction and account for friction
-        p1.getVelocity().setY((p1.getVelocity().getY() * Player.s_restitution));
+        p1.getVelocity().setX(-(p1.getVelocity().getX() * Ball.s_restitution)); // Reverse direction and account for friction
+        p1.getVelocity().setY((p1.getVelocity().getY() * Ball.s_restitution));
       }
       if (p1.getPosition().getY() - p1.getRadius() < 0)       // Top Wall
       {
         p1.getPosition().setY(p1.getRadius());        // Place ball against edge
-        p1.getVelocity().setY(-(p1.getVelocity().getY() * Player.s_restitution)); // Reverse direction and account for friction
-        p1.getVelocity().setX((p1.getVelocity().getX() * Player.s_restitution));
+        p1.getVelocity().setY(-(p1.getVelocity().getY() * Ball.s_restitution)); // Reverse direction and account for friction
+        p1.getVelocity().setX((p1.getVelocity().getX() * Ball.s_restitution));
       }
       else if (p1.getPosition().getY() + p1.getRadius() > getHeight()) // Bottom Wall
       {
         p1.getPosition().setY(getHeight() - p1.getRadius());    // Place ball against edge
-        p1.getVelocity().setY(-(p1.getVelocity().getY() * Player.s_restitution));    // Reverse direction and account for friction
-        p1.getVelocity().setX((p1.getVelocity().getX() * Player.s_restitution));
+        p1.getVelocity().setY(-(p1.getVelocity().getY() * Ball.s_restitution));    // Reverse direction and account for friction
+        p1.getVelocity().setX((p1.getVelocity().getX() * Ball.s_restitution));
       }
       // Player to player collision
-      for (int j = 1 + 1; j < m_players.size(); j++)
+      for (int j = 1 + 1; j < m_balls.size(); j++)
       {
-        Player p2 = m_players.get(j);
+        Ball p2 = m_balls.get(j);
         p1.interactWith(p2);
       }
       p1.tick();
@@ -145,7 +160,7 @@ public class Arena extends Source
    */
   protected Object stateToEvent()
   {
-    return m_players;
+    return m_balls;
   }
 
   @Override

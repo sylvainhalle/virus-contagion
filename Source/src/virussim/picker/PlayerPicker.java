@@ -15,16 +15,16 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package coronaarena.picker;
+package virussim.picker;
 
 import ca.uqac.lif.synthia.Picker;
-import coronaarena.Player;
-import coronaarena.Vector2d;
+import virussim.Patient;
+import virussim.physics.Vector2d;
 
 /**
- * A picker that generates instances of {@link Player}s.
+ * A picker that generates instances of {@link Patient}s.
  */
-public class PlayerPicker implements Picker<Player>
+public class PlayerPicker implements Picker<Patient>
 {
   /**
    * A picker for the position of a new player
@@ -57,19 +57,19 @@ public class PlayerPicker implements Picker<Player>
   }
   
   @Override
-  public Picker<Player> duplicate(boolean with_state)
+  public Picker<Patient> duplicate(boolean with_state)
   {
     return new PlayerPicker(m_pickerPosition.duplicate(with_state),
         m_pickerVelocity.duplicate(with_state), m_pickerMovable.duplicate(with_state));
   }
 
   @Override
-  public Player pick()
+  public Patient pick()
   {
     Vector2d position = m_pickerPosition.pick();
     Vector2d velocity = m_pickerVelocity.pick();
     boolean movable = m_pickerMovable.pick();
-    return new Player(position, velocity, movable);
+    return new Patient(position, velocity, movable);
   }
 
   @Override

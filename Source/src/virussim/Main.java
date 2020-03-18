@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package coronaarena;
+package virussim;
 
 import static ca.uqac.lif.cep.Connector.connect;
 
@@ -31,12 +31,16 @@ import ca.uqac.lif.cep.functions.ApplyFunction;
 import ca.uqac.lif.cep.tmf.Pump;
 import ca.uqac.lif.cep.widgets.WidgetSink;
 import ca.uqac.lif.synthia.random.RandomBoolean;
+import ca.uqac.lif.synthia.random.RandomFloat;
 import ca.uqac.lif.synthia.random.RandomInteger;
 import ca.uqac.lif.synthia.random.RandomIntervalFloat;
-import coronaarena.Player.HealthState;
-import coronaarena.picker.CirclePicker;
-import coronaarena.picker.PlayerPicker;
-import coronaarena.picker.RectanglePicker;
+import virussim.Patient.Health;
+import virussim.cep.DrawArena;
+import virussim.physics.Arena;
+import virussim.picker.CirclePicker;
+import virussim.picker.HealthMarkovChain;
+import virussim.picker.PlayerPicker;
+import virussim.picker.RectanglePicker;
 
 public class Main
 {
@@ -52,10 +56,13 @@ public class Main
     int num_players = 200;
     
     // The probability of a player being movable
-    float movable_probability = 0.25f;
+    float movable_probability = 0.75f;
     
-    // The number of steps before an infected player recovers
-    Player.s_recoverySteps = 100;
+    // The probability of dying when infected
+    float p_die = 0f;
+    
+    // The probability of staying infected
+    float p_infected = 0.999f;
     
     // Create a collection of randomly generated players
     RandomInteger r_w = new RandomInteger(0, width);
@@ -67,15 +74,18 @@ public class Main
         velocity, new RandomIntervalFloat(0, 2 * Math.PI));
     RandomBoolean p_movable = new RandomBoolean(movable_probability);
     PlayerPicker p_player = new PlayerPicker(p_position, p_velocity, p_movable);
-    Set<Player> players = new HashSet<Player>(num_players);
+    Set<Patient> players = new HashSet<Patient>(num_players);
     for (int i = 0; i < num_players; i++)
     {
-      Player p = p_player.pick();
+      Patient p = p_player.pick();
       if (i == 0)
       {
         // Set a single player as infected
-        p.m_healthState = HealthState.INFECTED;
+        p.m_health = Health.INFECTED;
       }
+      RandomFloat rf = new RandomFloat();
+      rf.setSeed(i);
+      p.setHealthChain(new HealthMarkovChain(p_infected, p_die, rf));
       players.add(p);
     }
     
