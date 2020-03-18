@@ -45,6 +45,9 @@ public class Main
 {
   public static void main(String[] args)
   {
+    // The starting seed for all RNGs
+    int seed = 0;
+    
     // Whether to use the Markov model for patients, or
     // a fixed number of steps
     boolean use_markov = false;
@@ -57,7 +60,7 @@ public class Main
     int width = 640, height = 320;
     
     // The initial velocity of each player
-    float velocity = 2;
+    float velocity = 4;
     
     // The number of players in the arena
     int num_players = 200;
@@ -67,7 +70,7 @@ public class Main
     
     // The number of simulation steps after which a player recovers
     // (in the fixed model)
-    int recovery_steps = 100;
+    int recovery_steps = 50;
     
     // The probability of dying when infected (in the Markov model)
     float p_die = 0f;
@@ -79,20 +82,31 @@ public class Main
     Picker<Float> r_w = null, r_h = null;
     if (gaussian_positions)
     {
-      r_w = new AffineTransform.AffineTransformFloat(new GaussianFloat(), width / 6, width / 2);
-      r_h = new AffineTransform.AffineTransformFloat(new GaussianFloat(), height / 6, height / 2);
+      GaussianFloat gf_w = new GaussianFloat();
+      gf_w.setSeed(seed++);
+      r_w = new AffineTransform.AffineTransformFloat(gf_w, width / 6, width / 2);
+      GaussianFloat gf_h = new GaussianFloat();
+      gf_h.setSeed(seed++);
+      r_h = new AffineTransform.AffineTransformFloat(gf_h, height / 6, height / 2);
     }
     else
     {
-      r_w = new AffineTransform.AffineTransformFloat(new RandomFloat(), width, 0);
-      r_h = new AffineTransform.AffineTransformFloat(new RandomFloat(), height, 0);
+      RandomFloat rf_w = new RandomFloat();
+      rf_w.setSeed(seed++);
+      r_w = new AffineTransform.AffineTransformFloat(rf_w, width, 0);
+      RandomFloat rf_h = new RandomFloat();
+      rf_h.setSeed(seed++);
+      r_h = new AffineTransform.AffineTransformFloat(rf_h, height, 0);
     }
     
     // Create a collection of randomly generated players
     RectanglePicker p_position = new RectanglePicker(r_w, r_h);
+    RandomIntervalFloat rif = new RandomIntervalFloat(0, 2 * Math.PI);
+    rif.setSeed(seed++);
     CirclePicker p_velocity = new CirclePicker(
-        velocity, new RandomIntervalFloat(0, 2 * Math.PI));
+        velocity, rif);
     RandomBoolean p_movable = new RandomBoolean(movable_probability);
+    p_movable.setSeed(seed++);
     PlayerPicker p_player = new PlayerPicker(p_position, p_velocity, p_movable);
     Set<Patient> players = new HashSet<Patient>(num_players);
     for (int i = 0; i < num_players; i++)
@@ -116,7 +130,7 @@ public class Main
     Arena arena = new Arena(width, height, players);
     
     // Create a widget sink
-    Pump pump = new Pump(25);
+    Pump pump = new Pump(50);
     ArenaWindow win = new ArenaWindow(width, height, pump);
     WidgetSink w_sink = new WidgetSink(win.getLabel());
     
