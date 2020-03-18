@@ -42,20 +42,22 @@ import ca.uqac.lif.synthia.random.GaussianFloat;
 import ca.uqac.lif.synthia.random.RandomBoolean;
 import ca.uqac.lif.synthia.random.RandomFloat;
 import ca.uqac.lif.synthia.random.RandomIntervalFloat;
+import ca.uqac.lif.synthia.vector.HyperspherePicker;
+import ca.uqac.lif.synthia.vector.PrismPicker;
 import virussim.Patient.Health;
 import virussim.cep.CountStatus;
 import virussim.cep.DrawArena;
 import virussim.gui.BitmapJFrame;
 import virussim.gui.ProcessorClickListener;
 import virussim.physics.Arena;
-import virussim.picker.CirclePicker;
 import virussim.picker.HealthMarkovChain;
 import virussim.picker.PlayerPicker;
-import virussim.picker.RectanglePicker;
 import virussim.picker.StepCounter;
+import virussim.picker.Vector2dPicker;
 
 public class Main
 {
+  @SuppressWarnings("unchecked")
   public static void main(String[] args)
   {
     // The starting seed for all RNGs
@@ -114,10 +116,10 @@ public class Main
     
     // Create a collection of randomly generated players, and add them
     // to the arena
-    RectanglePicker p_position = new RectanglePicker(r_w, r_h);
+    Vector2dPicker p_position = new Vector2dPicker(new PrismPicker(r_w, r_h));
     RandomIntervalFloat rif = new RandomIntervalFloat(0, 2 * Math.PI);
     rif.setSeed(seed++);
-    CirclePicker p_velocity = new CirclePicker(velocity, rif);
+    Vector2dPicker p_velocity = new Vector2dPicker(new HyperspherePicker(velocity, rif));
     RandomBoolean p_movable = new RandomBoolean(movable_probability);
     p_movable.setSeed(seed++);
     PlayerPicker p_player = new PlayerPicker(p_position, p_velocity, p_movable);

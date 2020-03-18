@@ -18,13 +18,45 @@
 package virussim.picker;
 
 import ca.uqac.lif.synthia.Picker;
+import ca.uqac.lif.synthia.vector.VectorPicker;
 import virussim.physics.Vector2d;
 
 /**
- * A picker that generates 2D vectors.
+ * A picker that generates 2D vectors. This class only wraps around
+ * Synthia's {@link VectorPicker}s.
  */
-public interface Vector2dPicker extends Picker<Vector2d>
+public class Vector2dPicker implements Picker<Vector2d>
 {
+  /**
+   * The vector picker provided by Synthia
+   */
+  protected VectorPicker m_picker;
+  
+  /**
+   * Creates a new Vector2d picker
+   * @param p The {@link VectorPicker} used to create 2D vectors
+   */
+  public Vector2dPicker(VectorPicker p)
+  {
+    super();
+    m_picker = p;
+  }
+  
   @Override
-  public Vector2dPicker duplicate(boolean with_state);
+  public Vector2dPicker duplicate(boolean with_state)
+  {
+    return new Vector2dPicker((VectorPicker) m_picker.duplicate(with_state));
+  }
+
+  @Override
+  public void reset()
+  {
+    m_picker.reset();
+  }
+
+  @Override
+  public Vector2d pick()
+  {
+    return new Vector2d(m_picker.pick());
+  }
 }

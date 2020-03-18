@@ -50,6 +50,15 @@ public class Vector2d
   }
   
   /**
+   * Creates a new 2D vector
+   * @param coordinates A list of coordinate values
+   */
+  public Vector2d(float ... coordinates)
+  {
+    this((double) coordinates[0], (double) coordinates[1]);
+  }
+  
+  /**
    * Gets the first coordinate of the vector
    * @return The coordinate
    */
