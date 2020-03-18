@@ -29,19 +29,19 @@ public class RectanglePicker implements Vector2dPicker
   /**
    * A picker for the "x" position of the vector
    */
-  protected Picker<Integer> m_pickerX;
+  protected Picker<Float> m_pickerX;
   
   /**
    * A picker for the "y" position of the vector
    */
-  protected Picker<Integer> m_pickerY;
+  protected Picker<Float> m_pickerY;
   
   /**
    * Creates a new rectangle picker
    * @param picker_x A picker for the "x" position of the vector
    * @param picker_y A picker for the "y" position of the vector
    */
-  public RectanglePicker(Picker<Integer> picker_x, Picker<Integer> picker_y)
+  public RectanglePicker(Picker<Float> picker_x, Picker<Float> picker_y)
   {
     super();
     m_pickerX = picker_x;
@@ -51,7 +51,7 @@ public class RectanglePicker implements Vector2dPicker
   @Override
   public Vector2d pick()
   {
-    return new Vector2d(m_pickerX.pick(), m_pickerY.pick());
+    return new Vector2d(m_pickerX.pick().intValue(), m_pickerY.pick().intValue());
   }
 
   @Override

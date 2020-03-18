@@ -19,33 +19,40 @@ package virussim;
 
 import static ca.uqac.lif.cep.Connector.connect;
 
-import java.awt.FlowLayout;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import ca.uqac.lif.cep.functions.ApplyFunction;
 import ca.uqac.lif.cep.tmf.Pump;
 import ca.uqac.lif.cep.widgets.WidgetSink;
+import ca.uqac.lif.synthia.Picker;
+import ca.uqac.lif.synthia.random.AffineTransform;
+import ca.uqac.lif.synthia.random.GaussianFloat;
 import ca.uqac.lif.synthia.random.RandomBoolean;
 import ca.uqac.lif.synthia.random.RandomFloat;
-import ca.uqac.lif.synthia.random.RandomInteger;
 import ca.uqac.lif.synthia.random.RandomIntervalFloat;
 import virussim.Patient.Health;
 import virussim.cep.DrawArena;
+import virussim.gui.ArenaWindow;
 import virussim.physics.Arena;
 import virussim.picker.CirclePicker;
 import virussim.picker.HealthMarkovChain;
 import virussim.picker.PlayerPicker;
 import virussim.picker.RectanglePicker;
+import virussim.picker.StepCounter;
 
 public class Main
 {
   public static void main(String[] args)
   {
+    // Whether to use the Markov model for patients, or
+    // a fixed number of steps
+    boolean use_markov = false;
+    
+    // Whether to use a Gaussian distribution for patient positions,
+    // or a uniform distribution
+    boolean gaussian_positions = false;
+    
     // The width and height of the arena
     int width = 640, height = 320;
     
@@ -56,19 +63,32 @@ public class Main
     int num_players = 200;
     
     // The probability of a player being movable
-    float movable_probability = 0.75f;
+    float movable_probability = 0.25f;
     
-    // The probability of dying when infected
+    // The number of simulation steps after which a player recovers
+    // (in the fixed model)
+    int recovery_steps = 100;
+    
+    // The probability of dying when infected (in the Markov model)
     float p_die = 0f;
     
-    // The probability of staying infected
+    // The probability of staying infected (in the Markov model)
     float p_infected = 0.999f;
     
+    // The position pickers
+    Picker<Float> r_w = null, r_h = null;
+    if (gaussian_positions)
+    {
+      r_w = new AffineTransform.AffineTransformFloat(new GaussianFloat(), width / 6, width / 2);
+      r_h = new AffineTransform.AffineTransformFloat(new GaussianFloat(), height / 6, height / 2);
+    }
+    else
+    {
+      r_w = new AffineTransform.AffineTransformFloat(new RandomFloat(), width, 0);
+      r_h = new AffineTransform.AffineTransformFloat(new RandomFloat(), height, 0);
+    }
+    
     // Create a collection of randomly generated players
-    RandomInteger r_w = new RandomInteger(0, width);
-    r_w.setSeed(1);
-    RandomInteger r_h = new RandomInteger(0, height);
-    r_h.setSeed(100);
     RectanglePicker p_position = new RectanglePicker(r_w, r_h);
     CirclePicker p_velocity = new CirclePicker(
         velocity, new RandomIntervalFloat(0, 2 * Math.PI));
@@ -83,39 +103,32 @@ public class Main
         // Set a single player as infected
         p.m_health = Health.INFECTED;
       }
-      RandomFloat rf = new RandomFloat();
-      rf.setSeed(i);
-      p.setHealthChain(new HealthMarkovChain(p_infected, p_die, rf));
+      if (use_markov)
+      {
+        p.setHealthPicker(new HealthMarkovChain(p_infected, p_die, new RandomFloat()));
+      }
+      else
+      {
+        p.setHealthPicker(new StepCounter(recovery_steps));
+      }
       players.add(p);
     }
-    
-    // Add the players to the arena
     Arena arena = new Arena(width, height, players);
-
-    // Create a window to display the arena
-    JFrame arena_window = new JFrame();
-    JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    arena_window.add(panel);
-    arena_window.setTitle("Simulation");
-    arena_window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    arena_window.setSize(width, height);
-    JLabel img_label = new JLabel();
-    panel.add(img_label);
     
     // Create a widget sink
-    WidgetSink w_sink = new WidgetSink(img_label);
+    Pump pump = new Pump(25);
+    ArenaWindow win = new ArenaWindow(width, height, pump);
+    WidgetSink w_sink = new WidgetSink(win.getLabel());
     
     // Connect arena to sink, with a pump in between
-    Pump pump = new Pump(25);
     connect(arena, pump);
     ApplyFunction draw = new ApplyFunction(new DrawArena(width, height));
     connect(pump, draw);
     connect(draw, w_sink);
     
     // Ready
-    arena_window.setVisible(true);
-    pump.start();
-    //pump.turn();
+    win.setVisible(true);
+    pump.turn();
   }
 
 }

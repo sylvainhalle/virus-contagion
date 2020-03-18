@@ -17,9 +17,9 @@
  */
 package virussim;
 
+import ca.uqac.lif.synthia.Picker;
 import virussim.physics.Ball;
 import virussim.physics.Vector2d;
-import virussim.picker.HealthMarkovChain;
 
 /**
  * A special type of {@link Ball} that can catch a virus when in contact
@@ -38,9 +38,9 @@ public class Patient extends Ball
   protected Health m_health;
   
   /**
-   * The player's Markov chain for its health state
+   * The player's picker for its health state
    */
-  protected HealthMarkovChain m_healthChain;
+  protected Picker<Health> m_healthPicker;
 
   /**
    * Flag deciding whether the player is allowed to move in the
@@ -65,13 +65,13 @@ public class Patient extends Ball
   }
   
   /**
-   * Sets the Markov chain defining the health status of this
+   * Sets the picker defining the health status of this
    * patient.
-   * @param c The chain
+   * @param c The picker
    */
-  public void setHealthChain(HealthMarkovChain c)
+  public void setHealthPicker(Picker<Health> p)
   {
-    m_healthChain = c;
+    m_healthPicker = p;
   }
 
   /**
@@ -103,7 +103,7 @@ public class Patient extends Ball
     // If infected, pick next state in Markov chain
     if (m_health == Health.INFECTED)
     {
-      m_health = m_healthChain.pick();
+      m_health = m_healthPicker.pick();
     }
   }
 

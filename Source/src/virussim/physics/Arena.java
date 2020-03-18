@@ -87,8 +87,8 @@ public class Arena extends Source
   @Override
   protected boolean compute(Object[] inputs, Queue<Object[]> outputs)
   {
-    update();
     outputs.add(new Object[] {stateToEvent()});
+    update();
     return true;
   }
 
