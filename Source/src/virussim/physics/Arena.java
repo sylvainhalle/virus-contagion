@@ -20,10 +20,6 @@ package virussim.physics;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
-
-import ca.uqac.lif.cep.Processor;
-import ca.uqac.lif.cep.tmf.Source;
 
 /**
  * A rectangular region where balls can move and collide. The state
@@ -31,7 +27,7 @@ import ca.uqac.lif.cep.tmf.Source;
  * of each of the balls it contains. The state of the balls is updated
  * by calling {@link #update()}.
  */
-public class Arena extends Source
+public class Arena
 {
   /**
    * The set of players in the arena
@@ -56,7 +52,7 @@ public class Arena extends Source
    */
   public Arena(int width, int height, /*@ non_null @*/ Collection<? extends Ball> balls)
   {
-    super(1);
+    super();
     m_width = width;
     m_height = height;
     m_balls = new HashMap<Integer,Ball>(balls.size());
@@ -84,13 +80,7 @@ public class Arena extends Source
     return m_height;
   }
 
-  @Override
-  protected boolean compute(Object[] inputs, Queue<Object[]> outputs)
-  {
-    outputs.add(new Object[] {stateToEvent()});
-    update();
-    return true;
-  }
+  
 
   /**
    * Gets the current state of each ball in the arena
@@ -102,9 +92,9 @@ public class Arena extends Source
   }
 
   /**
-   * Updates the state of each ball
+   * Updates the state of each ball in the arena
    */
-  protected void update()
+  public void update()
   {
     // Step the position of movable objects based off their velocity/gravity and elapsedTime
     for (int i = 0; i < m_balls.size(); i++)
@@ -152,20 +142,5 @@ public class Arena extends Source
       }
       p1.tick();
     }
-  }
-
-  /**
-   * Converts the arena's current state into an output event
-   * @return The event
-   */
-  protected Object stateToEvent()
-  {
-    return m_balls;
-  }
-
-  @Override
-  public Processor duplicate(boolean with_state)
-  {
-    throw new UnsupportedOperationException();
   }
 }

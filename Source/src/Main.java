@@ -50,6 +50,7 @@ import ca.uqac.lif.synthia.vector.HyperspherePicker;
 import ca.uqac.lif.synthia.vector.PrismPicker;
 import virussim.Patient;
 import virussim.Patient.Health;
+import virussim.cep.ArenaSource;
 import virussim.cep.DrawArena;
 import virussim.cep.GetHealth;
 import virussim.gui.BitmapJFrame;
@@ -93,10 +94,10 @@ public class Main
     int recovery_steps = 75;
     
     // The probability of dying when infected (in the Markov model)
-    float p_die = 0f;
+    float p_die = 0.001f;
     
     // The probability of staying infected (in the Markov model)
-    float p_infected = 0.999f;
+    float p_infected = 0.995f;
     
     // The position pickers
     Picker<Float> r_w = null, r_h = null;
@@ -150,8 +151,9 @@ public class Main
     Arena arena = new Arena(width, height, players);
     
     // Connect arena to pump and to fork
+    ArenaSource as = new ArenaSource(arena);
     Pump pump = new Pump(50);
-    connect(arena, pump);
+    connect(as, pump);
     Fork fork = new Fork(2);
     connect(pump, fork);
     
@@ -188,7 +190,7 @@ public class Main
       ApplyFunction merge = new ApplyFunction(new MergeTuples());
       connect(stt, 0, merge, 0);
       connect(count, 0, merge, 1);
-      UpdateTableMap table = new UpdateTableMap("t", "HEALTHY", "INFECTED", "RECOVERED");
+      UpdateTableMap table = new UpdateTableMap("t", "HEALTHY", "INFECTED", "RECOVERED", "DEAD");
       connect(merge, table);
       Scatterplot plot = new Scatterplot();
       

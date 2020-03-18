@@ -42,19 +42,12 @@ public class Patient extends Ball
    */
   protected Picker<Health> m_healthPicker;
 
-  /**
-   * Flag deciding whether the player is allowed to move in the
-   * arena
-   */
-  protected boolean m_isMoving;
-
   public Patient(Vector2d position, Vector2d velocity, boolean is_moving) 
   {
     super();
     m_id = s_idCounter++;
     m_position = position;
     m_velocity = velocity;
-    m_isMoving = is_moving;
     if (!is_moving)
     {
       // Ignore speed vector
@@ -129,16 +122,5 @@ public class Patient extends Ball
       }
     }
     return false;
-  }
-  
-  @Override
-  public String toString()
-  {
-    StringBuilder out = new StringBuilder();
-    out.append("<");
-    out.append("p:").append(m_position).append(",").append("v:").append(m_velocity);
-    out.append("m:").append(m_isMoving).append("h:").append(m_health);
-    out.append(">");
-    return out.toString();
   }
 }
