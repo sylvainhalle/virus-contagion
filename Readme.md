@@ -361,4 +361,107 @@ This will result in an "animated" arena that updates at a rate of roughly 20
 images per second. (In our program, the pump is actually started when the user
 clicks on the window.)
 
+### Plotting the evolution
+
+The second part of the Post simulator is a dynamic plot that shows the evolution
+of the number of healthy, infected and recovered patients during the simulation.
+We shall again use BeepBeep's processors and functions to achieve a similar
+result, with special care to minimize the amount of custom code.
+
+A single custom `Function` object needs to be created for this part of the
+program. The class `GetHealth` is a BeepBeep function that takes as input a
+`Patient` object, and returns as output the value of its `Health` status; it is
+made of 16 lines of code.
+
+Equipped with this function, the remainder of the operation can be made using
+BeepBeep and its existing palettes. In order to do so, two palettes are needed:
+
+- The *Tuple* palette provides basic functionalities for manipulating tuples
+  (i.e. sets of key-value pairs)
+- The *MTNP* palette allows users to create tables and display their contents
+  by making background calls to [Gnuplot](https://www.gnuplot.info)
+
+Let us start with the chain of processors, which we will then explain step by
+step.
+
+![Processor chain](Chain2.png?raw=true)
+
+The chain starts on the far left by a `CountDecimate` processor, which is
+instructed to keep only one out of every 25 input events. This is intended to
+reduce to lower the event rate in the remainder of the chain. The output is then
+divided into two copies. The top path turns every event into the number 1, and
+sends this feed of "ones" into a processor that adds them; this is a standard
+BeepBeep construct to create a counter (1, 2, 3, etc.) out of an arbitrary input
+stream. These values are then turned into a feed of tuples, by assigning them
+to an attribute named "t".
+
+The bottom path takes the map of players in a given state, and applies a stack
+of functions to it, which reads from bottom to top. First, the map is
+transformed so that its values become the health status of each player; this is
+done by applying our custom `GetHealth` function to each value. The multiset of
+values in the map is then computed (function labelled `**`), the cardinality of
+each value is extracted (function labelled `##`), and this map of
+value/cardinality pairs is finally turned into a tuple.
+
+Both the top and the bottom paths produce a tuple; these two tuples are then
+merged using the "union" function. The end result of this first part of the
+chain is a stream of tuples, each made of *t* (the increasing timestamp counter)
+and one key-value pair each for the number of `HEALTHY`, `INFECTED`, `RECOVERED`
+and `DEAD` patients in the original map.
+
+These tuples are then progressively accumulated into a table, that is sent to a
+`DrawPlot` processor producing a line plot out of its contents. The resulting
+image (produced by Gnuplot in the background) is then sent to a `WidgetSink` to
+be displayed in a window, as in the first part of our program.
+
+The final result of this chain, which can then be connected to the
+`ArenaSource`, is a second window that displays the dynamically updated plot of
+the number of healthy, infected and recovered patients over time. Apart from
+the custom `GetHealth` function, creating this chain only requires piping
+existing BeepBeep objects and takes fewer than 25 Java instructions.
+
+Wrapping up
+-----------
+
+We have used the current events about COVID-19 as a "fun" pretext to showcase
+some of the features of two important libraries developed at
+[LIF](https://liflab.ca).
+
+- Complex data structures and objects can be synthesized according to various
+  parameters using the [Synthia](https://github.com/liflab/synthia) generation
+  library.
+- The piping and processing of events can be handled by the
+  [BeepBeep](https://liflab.github.io/beepbeep-3) library; in the present case,
+  chains of a handful of basic processors and functions made it possible to
+  display an animated simulation, as well as a dynamic plot computed from the
+  sequence of states of that simulation.
+
+In addition, we have seen how, using these libraries, the creation of the
+simulator can be done using a very limited amount of custom classes and lines of
+code.
+
+This small project could lend itself to multiple easy extensions. Further use of
+Synthia's `Picker` objects could be used to generate more complex initial states
+or behaviors for each patient (e.g.: the possibility of being reinfected, or the
+separation of the infected state into asymptomatic and symptomatic, etc.).
+BeepBeep could also be used to perform further computations on the state of the
+simulation, such as the number of new infections over a sliding window (we leave
+this as an exercise!).
+
+Running this program
+--------------------
+
+To compile and run this example, first get the latest build of BeepBeep and its
+*MTNP*, *Tuples*, and *Widgets* palettes, and make sure they are in the
+classpath. The project also comes with a standardized
+[Ant build script](https://github.com/sylvainhalle/AntRun) that has its own
+documentation.
+
+About the author
+----------------
+
+This example was coded by [Sylvain Hallé](https://leduotang.ca/sylvain), Full
+Professor at [Université du Québec à Chicoutimi](https://www.uqac.ca) and
+Canada Research Chair on Software Testing, Specification and Verification.
+
 <!-- :mode=markdown:maxLineLen=80: -->
