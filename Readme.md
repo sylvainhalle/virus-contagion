@@ -1,6 +1,8 @@
 A simple virus contagion simulator
 ==================================
 
+![Screenshot](Screenshot.jpg?raw=true)
+
 In March 2020, the Washington Post published an online
 [paper](https://www.washingtonpost.com/graphics/2020/world/corona-simulator)
 that showed, through different simulations, how the spread of a virus evolves
@@ -321,16 +323,42 @@ for a new event (a process called "pulling"), and then "push" this new event
 into the drawing function and the remainder of the downstream chain. This final
 chain can be illustrated graphically:
 
+![Processor chain](Chain1.png?raw=true)
+
+In this drawing, events flow from left to right. It shows how the `ArenaSource`
+(leftmost box) is connected to a pump, itself connected to an `ApplyFunction`
+processor that applies the `DrawArena` function, which pipes its output into the
+`WidgetSink` responsible for displaying the image. The drawing also follows the
+BeepBeep graphical convention that each type of event is given a different
+color. Here, the maps produced by the arena are shown in pink, while the binary
+images produced by `DrawArena` are in light green. The Java code that creates
+this chain if made of just a few lines:
+
 ```java
+BitmapJFrame window = ...
 Arena a = ...
-JLabel l = ...
+JLabel l = window.getLabel();
 ArenaSource as = new ArenaSource(a);
-Pump p = new Pump(50);
-connect(as, p);
-ApplyFunction af = new ApplyFunction(new DrawArena(640, 480));
-connect(p, af);
+Pump pump = new Pump(50);
+Connector.connect(as, pump);
+ApplyFunction af = new ApplyFunction(new DrawArena(W, H));
+Connector.connect(pump, af);
 WidgetSink ws = new WidgetSink(l);
-connect(af, ws);
+Connector.connect(af, ws);
 ```
+
+Displaying the window and running the animation is just a matter of making the
+frame visible and starting the pump:
+
+```java
+window.setVisible(true);
+pump.start();
+```
+
+In our code sample, the pump was instantiated with parameter `50`: this
+indicates that, once started, it will pull one new input event every 50 ms.
+This will result in an "animated" arena that updates at a rate of roughly 20
+images per second. (In our program, the pump is actually started when the user
+clicks on the window.)
 
 <!-- :mode=markdown:maxLineLen=80: -->
