@@ -213,6 +213,124 @@ illustrated by the following state machine:
 
 ![Markov chain](Markov.png?raw=true)
 
+In the infected (I) state, a patient has a probability pD of moving to the dead
+(D) state in the next simulation step, a probability pR of moving to the
+recovered state (R); the rest of the time, it remains in the infected state. We
+can also see that once a patient reaches states R or D, it then stays there
+forever. One can create this Markov chain in Synthia as follows:
 
+```java
+Picker<Float> pf = ...
+MarkovChain m = new MarkovChain(pf);
+m.add(0, INFECTED);
+m.add(1, RECOVERED);
+m.add(2, DEAD);
+m.add(0, 1, pR);
+m.add(0, 2, pD);
+m.add(0, 0, 1 - (pR + pD));
+m.add(1, 1, 1);
+m.add(2, 2, 1);
+```
+
+In the project, the `HealthMarkovChain` class simply creates such a Markov
+chain for given values of `pR` and `pD`. Note that the object also needs a
+`Picker<Float>`, which it uses to select the next transition to take on each
+call to `pick()`.
+
+## Creating patients
+
+Using such a model makes it possible to try the simulation with different
+recovery strategies, and different parameters for each strategy. It suffices to
+give a different `Picker<Health>` to the patient and restart the program. Each
+patient can even be given a different (randomly selected!) picker.
+
+Equipped with these various pickers, it is now possible to generate patients. We
+do so by creating a `PatientPicker`, which is an object implementing Synthia's
+`Picker<Patient>` interface. In other words, it is a class that produces a new
+instance of `Patient` every time its `pick()` method is called. In order to do
+so, the `PatientPicker` requires:
+
+- a `Picker<float[]>` to generate the position vector (e.g. the `PrismPicker`)
+- a `Picker<float[]>` to generate the velocity vector (e.g. the
+  `HyperspherePicker`)
+- a `Picker<Boolean>` to determine if it is moving (e.g. the `RandomBoolean`)
+- a `Picker<Health>` to manage its health status (e.g. the `Playback` or
+  `MarkovChain` objects we just described)
+
+Once instantiated in such a way, the `PatientPicker` is repeatedly called, and
+the patients it produces are added to the arena. The simulation is then ready to
+start.
+
+Driving the simulation
+----------------------
+
+So far, our simulation makes heavy use of objects provided by Synthia; but what
+about BeepBeep?
+
+This event stream library will be used to drive the simulation and process its
+output in various ways. As you may know, BeepBeep is based on the concept of
+*processor*: a processor is a computing unit that receives data elements called
+*events* as its input, and produces other events as its output. In the present
+case, the initial source of events will be the arena --or rather the set of
+patients it contains. An event will be the `Map` object that associates each
+patient ID with the corresponding patient instance. A *stream* of events will be
+formed by the succession of such maps at each simulation step.
+
+To this end, the `Arena` object must be turned into a special BeepBeep processor
+called a `Source`. This is the purpose of the `ArenaSource` class, which is a
+simple wrapper around an arena, so that its current state can be used as a
+source of BeepBeep events. Since `ArenaSource` is a BeepBeep processor, it can
+be connected to any other processor provided by the library.
+
+### Drawing the simulation
+
+A first essential task of the simulator is to display the current position and
+state of each patient, as in the Post's "circle" simulation. There are many
+ways to do this, but we shall implement it by leveraging a maximum of BeepBeep
+functions, and minimizing the amount of custom code.
+
+- We first define a BeepBeep `Function` object, whose task is to turn a Map
+  produced by the `ArenaSource` into a Java `BufferedImage`. That is, a picture
+  is created for each state of the arena; this is taken care of by the
+  `DrawArena` class, which is made of a little more than 50 lines of code.
+- These pictures must be shown somewhere; the `BitmapJFrame` is a very simple
+  window object, containing a single `JLabel` widget whose background will be
+  used to display the image. The window and its associated `MouseListener` make
+  up 70 lines of code.
+
+These 120 lines are the only pieces of custom code we need; the remainder of the
+program can be accomplished by creating and piping BeepBeep objects.
+
+Among the various extensions (called
+"[palettes](https://github.com/liflab/beepbeep-3-palettes)") available for
+BeepBeep, one of them is called *Widgets*. In this palette, the `WidgetSink`
+processor has the task of receiving a stream of objects, and using them to
+update the state of a given Swing widget. For example, when the WidgetSink
+receives an image and is pointed to a `JLabel`, it will set the background
+property of the label to contain the image. Therefore, by simply piping the
+output of `DrawArena` to a `WidgetSink` that points to the label of our
+`BitmapJFrame`, the frame's content will automatically update every time a
+new image comes in.
+
+Connecting the `ArenaSource`, `DrawArena` and `WidgetSink` together directly
+will produce nothing. This is caused by the fact that none of these processors
+produce events unless asked for. In order to drive the animation, a special
+BeepBeep processor, called the `Pump`, must be inserted into the chain. If
+inserted directly after the source, the pump will periodically query the arena
+for a new event (a process called "pulling"), and then "push" this new event
+into the drawing function and the remainder of the downstream chain. This final
+chain can be illustrated graphically:
+
+```java
+Arena a = ...
+JLabel l = ...
+ArenaSource as = new ArenaSource(a);
+Pump p = new Pump(50);
+connect(as, p);
+ApplyFunction af = new ApplyFunction(new DrawArena(640, 480));
+connect(p, af);
+WidgetSink ws = new WidgetSink(l);
+connect(af, ws);
+```
 
 <!-- :mode=markdown:maxLineLen=80: -->
