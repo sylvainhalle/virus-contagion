@@ -1,7 +1,7 @@
 A simple virus contagion simulator
 ==================================
 
-![Screenshot](Screenshot.jpg?raw=true)
+![Screenshot](Source/src/doc-files/Screenshot.jpg?raw=true)
 
 In March 2020, the Washington Post published an online
 [paper](https://www.washingtonpost.com/graphics/2020/world/corona-simulator)
@@ -213,7 +213,7 @@ patient, namely that it can transition to an additional health state we call
 `DEAD` (hopefully with a very small probability!). Graphically, this is
 illustrated by the following state machine:
 
-![Markov chain](Markov.png?raw=true)
+![Markov chain](Source/src/doc-files/Markov.png?raw=true)
 
 In the infected (I) state, a patient has a probability pD of moving to the dead
 (D) state in the next simulation step, a probability pR of moving to the
@@ -323,7 +323,7 @@ for a new event (a process called "pulling"), and then "push" this new event
 into the drawing function and the remainder of the downstream chain. This final
 chain can be illustrated graphically:
 
-![Processor chain](Chain1.png?raw=true)
+![Processor chain](Source/src/doc-files/Chain1.png?raw=true)
 
 In this drawing, events flow from left to right. It shows how the `ArenaSource`
 (leftmost box) is connected to a pump, itself connected to an `ApplyFunction`
@@ -384,7 +384,7 @@ BeepBeep and its existing palettes. In order to do so, two palettes are needed:
 Let us start with the chain of processors, which we will then explain step by
 step.
 
-![Processor chain](Chain2.png?raw=true)
+![Processor chain](Source/src/doc-files/Chain2.png?raw=true)
 
 The chain starts on the far left by a `CountDecimate` processor, which is
 instructed to keep only one out of every 25 input events. This is intended to
