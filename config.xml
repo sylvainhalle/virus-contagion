@@ -72,7 +72,7 @@
       <classname>ca.uqac.lif.synthia.Picker</classname>
       <bundle>true</bundle>
       <files>
-        <zip>https://github.com/liflab/synthia/releases/download/v0.1.1/synthia.jar</jar>
+        <zip>https://github.com/liflab/synthia/releases/download/v0.2/synthia-0.2.zip</jar>
       </files>
     </dependency>
   </dependencies>
