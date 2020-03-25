@@ -457,6 +457,9 @@ classpath. The project also comes with a standardized
 [Ant build script](https://github.com/sylvainhalle/AntRun) that has its own
 documentation.
 
+In order to display the plots, [Gnuplot](https://gnuplot.info) must be
+installed and accessible by running `gnuplot` from the command line.
+
 About the author
 ----------------
 
