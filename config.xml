@@ -23,7 +23,7 @@
        script's default values -->
 
   <!-- The project's name -->
-  <name>Coronavirus Simulator</name>
+  <name>Virus Contagion Simulator</name>
   
   <!-- The project's version number -->
   <version>0.1</version>
@@ -33,11 +33,11 @@
   <author>Sylvain Hall&#233;</author>
   
   <!-- The project's main class -->
-  <mainclass>virussim.Main</mainclass>
+  <mainclass>Main</mainclass>
   
   <!-- Output jar -->
   <jar>
-    <filename>coronavirus-beepbeep.jar</filename>
+    <filename>virus-contagion.jar</filename>
     <withdeps>true</withdeps>
     <withdoc>false</withdoc>
   </jar>
@@ -61,7 +61,7 @@
       <classname>ca.uqac.lif.cep.Processor</classname>
       <bundle>true</bundle>
       <files>
-        <zip>https://github.com/liflab/beepbeep-3/releases/download/v0.10.2-alpha/beepbeep-3-0.10.2-alpha.zip</zip>
+        <zip>https://github.com/liflab/beepbeep-3/releases/download/v0.10.3-alpha/beepbeep-3-0.10.3-alpha.zip</zip>
       </files>
     </dependency>
     <dependency>
@@ -72,8 +72,32 @@
       <classname>ca.uqac.lif.synthia.Picker</classname>
       <bundle>true</bundle>
       <files>
-        <zip>https://github.com/liflab/synthia/releases/download/v0.2/synthia-0.2.zip</jar>
+        <zip>https://github.com/liflab/synthia/releases/download/v0.2/synthia-0.2.zip</zip>
       </files>
+    </dependency>
+    <dependency>
+      <name>BeepBeep Mtnp Palette</name>
+      <classname>ca.uqac.lif.mtnp.plot.gnuplot.Scatterplot</classname>
+      <files>
+        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20191002/mtnp.jar</jar>
+      </files>
+      <bundle>true</bundle>
+    </dependency>
+        <dependency>
+      <name>BeepBeep Tuples Palette</name>
+      <classname>import ca.uqac.lif.cep.tuples.MapToTuple</classname>
+      <files>
+        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20191002/tuples.jar</jar>
+      </files>
+      <bundle>true</bundle>
+    </dependency>
+    <dependency>
+      <name>BeepBeep Widgets Palette</name>
+      <classname>ca.uqac.lif.cep.widgets.WidgetSink</classname>
+      <files>
+        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20191002/widgets.jar</jar>
+      </files>
+      <bundle>true</bundle>
     </dependency>
   </dependencies>
 </build>
