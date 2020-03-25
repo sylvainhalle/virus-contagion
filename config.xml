@@ -77,17 +77,17 @@
     </dependency>
     <dependency>
       <name>BeepBeep Mtnp Palette</name>
-      <classname>ca.uqac.lif.mtnp.plot.gnuplot.Scatterplot</classname>
+      <classname>ca.uqac.lif.cep.mtnp.DrawPlot</classname>
       <files>
-        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20191002/mtnp.jar</jar>
+        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20200325/mtnp.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
         <dependency>
       <name>BeepBeep Tuples Palette</name>
-      <classname>import ca.uqac.lif.cep.tuples.MapToTuple</classname>
+      <classname>ca.uqac.lif.cep.tuples.MapToTuple</classname>
       <files>
-        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20191002/tuples.jar</jar>
+        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20200325/tuples.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
@@ -95,7 +95,7 @@
       <name>BeepBeep Widgets Palette</name>
       <classname>ca.uqac.lif.cep.widgets.WidgetSink</classname>
       <files>
-        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20191002/widgets.jar</jar>
+        <jar>https://github.com/liflab/beepbeep-3-palettes/releases/download/v20200325/widgets.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
